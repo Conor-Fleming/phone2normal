@@ -1,12 +1,11 @@
 package main
 
-import "strings"
+import (
+	"regexp"
+)
 
 func normalize(number string) string {
-	number = strings.ReplaceAll(number, "(", "")
-	number = strings.ReplaceAll(number, ")", "")
-	number = strings.ReplaceAll(number, "-", "")
-	number = strings.ReplaceAll(number, " ", "")
-	number = strings.TrimSpace(number)
-	return number
+	//matches any char that is not a digit and replaces (line 10) with empty string
+	re := regexp.MustCompile("\\D")
+	return re.ReplaceAllString(number, "")
 }
