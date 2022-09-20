@@ -12,7 +12,7 @@ const (
 	host     = "localhost"
 	port     = 5432
 	user     = "conor"
-	password = ""
+	password = "password1"
 	dbname   = "sandbox"
 )
 
@@ -53,7 +53,7 @@ func normalize(number string) string {
 }
 
 func insertNum(db *sql.DB, number string) (int, error) {
-	statement := `INSERT INTO phone_numbers(number) VALUES($1) RETURNING id`
+	statement := `INSERT INTO phone_numbers (number) VALUES ($1) RETURNING id`
 	var id int
 	err := db.QueryRow(statement, number).Scan(&id)
 	if err != nil {
