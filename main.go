@@ -110,21 +110,31 @@ func resetTable(db *sql.DB) error {
 
 func normalizeRecords(db *sql.DB) error {
 	queryString := `SELECT number FROM phone_numbers;`
+
 	rows, err := db.Query(queryString)
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
 
-	//numberSlice := make([]string, 0)
+	numberSlice := make([]string, 0)
 	for rows.Next() {
 		var number string
 		err = rows.Scan(&number)
 		if err != nil {
 			return err
 		}
-		//numberSlice = append(numberSlice, number)
-		fmt.Println(normalize(number))
+		numberSlice = append(numberSlice, number)
 	}
+	defer rows.Close()
+
+	updateString := `UPDATE phone_numbers SET numbers = (newNumber) VALUES ($1);`
+	rows, err = db.Query(updateString)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+
+	}
+
 	return nil
 }
