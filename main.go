@@ -35,11 +35,11 @@ func main() {
 	//inserting some records
 	_, err = insertNum(db, "(530) 514 4505")
 	errCheck(err)
-	_, err = insertNum(db, "(530) 514-4505")
+	_, err = insertNum(db, "(530) 517-4585")
 	errCheck(err)
 	_, err = insertNum(db, "530-514-4505")
 	errCheck(err)
-	_, err = insertNum(db, "(530)5144505")
+	_, err = insertNum(db, "(530)5142505")
 	errCheck(err)
 	_, err = insertNum(db, "1234567890")
 	errCheck(err)
@@ -51,7 +51,8 @@ func main() {
 	errCheck(err)
 
 	checkRecords(db)
-
+	fmt.Println("Normalizing....")
+	normalizeRecords(db)
 }
 
 func errCheck(err error) {
@@ -103,6 +104,27 @@ func resetTable(db *sql.DB) error {
 	_, err := db.Exec(command)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func normalizeRecords(db *sql.DB) error {
+	queryString := `SELECT number FROM phone_numbers;`
+	rows, err := db.Query(queryString)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	//numberSlice := make([]string, 0)
+	for rows.Next() {
+		var number string
+		err = rows.Scan(&number)
+		if err != nil {
+			return err
+		}
+		//numberSlice = append(numberSlice, number)
+		fmt.Println(normalize(number))
 	}
 	return nil
 }
