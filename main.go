@@ -29,6 +29,9 @@ func main() {
 
 	fmt.Println("Connected!")
 
+	err = resetTable(db)
+	errCheck(err)
+
 	//inserting some records
 	_, err = insertNum(db, "(530) 514 4505")
 	errCheck(err)
@@ -38,6 +41,17 @@ func main() {
 	errCheck(err)
 	_, err = insertNum(db, "(530)5144505")
 	errCheck(err)
+	_, err = insertNum(db, "1234567890")
+	errCheck(err)
+	_, err = insertNum(db, "123 456 7890")
+	errCheck(err)
+	_, err = insertNum(db, "123-456-7894")
+	errCheck(err)
+	_, err = insertNum(db, "(123)456-7890")
+	errCheck(err)
+
+	checkRecords(db)
+
 }
 
 func errCheck(err error) {
@@ -53,11 +67,42 @@ func normalize(number string) string {
 }
 
 func insertNum(db *sql.DB, number string) (int, error) {
-	statement := `INSERT INTO phone_numbers (number) VALUES ($1) RETURNING id`
+	statement := `INSERT INTO phone_numbers (number) VALUES ($1) RETURNING id;`
 	var id int
 	err := db.QueryRow(statement, number).Scan(&id)
 	if err != nil {
 		return -1, err
 	}
 	return id, nil
+}
+
+func checkRecords(db *sql.DB) error {
+	queryString := `SELECT number FROM phone_numbers;`
+	rows, err := db.Query(queryString)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	//numberSlice := make([]string, 0)
+	i := 0
+	for rows.Next() {
+		var number string
+		err = rows.Scan(&number)
+		if err != nil {
+			return err
+		}
+		fmt.Println(i, number)
+		i++
+	}
+	return nil
+}
+
+func resetTable(db *sql.DB) error {
+	command := `TRUNCATE TABLE phone_numbers RESTART IDENTITY;`
+	_, err := db.Exec(command)
+	if err != nil {
+		return err
+	}
+	return nil
 }
