@@ -115,11 +115,11 @@ func resetTable(db *sql.DB) error {
 }
 
 func normalizeRecords(db *sql.DB, records []string) error {
-	updateString := `UPDATE phone_numbers SET number = $1;`
-	for _, v := range records {
+	updateString := `UPDATE phone_numbers SET number = $2 WHERE id = $1;`
+	for i, v := range records {
 		newV := normalize(v)
 		//fmt.Println("this should be inserted:", newV)
-		_, err := db.Exec(updateString, newV)
+		_, err := db.Exec(updateString, i+1, newV)
 		if err != nil {
 			return err
 		}
