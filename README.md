@@ -8,5 +8,9 @@ This is so each time you run the program you dont get the same records being ins
 Once we have the records stored in a slice, we normalize the phone numbers by removing all non-digit characters and then update the rows with the normalized values.
 If the record being updated already exists we simply delete the duplicate row.
 
+### Follow ups
+-needs refactoring/moved to db directory
+-could explore user of an ORM
+
 
 
