@@ -29,6 +29,7 @@ func main() {
 
 	fmt.Println("Connected!")
 
+	//removing rows at each run so I dont get the same rows over and over on each run
 	err = resetTable(db)
 	errCheck(err)
 
@@ -53,7 +54,7 @@ func main() {
 	records, err := getRecords(db)
 	errCheck(err)
 
-	fmt.Println("Normalizing....")
+	fmt.Println("Normalizing....:")
 	err = normalizeRecords(db, records)
 	errCheck(err)
 
@@ -106,6 +107,7 @@ func getRecords(db *sql.DB) ([]string, error) {
 }
 
 func resetTable(db *sql.DB) error {
+	//removing rows from table
 	command := `TRUNCATE TABLE phone_numbers RESTART IDENTITY;`
 	_, err := db.Exec(command)
 	if err != nil {
@@ -115,13 +117,30 @@ func resetTable(db *sql.DB) error {
 }
 
 func normalizeRecords(db *sql.DB, records []string) error {
+	recordCheckString := `SELECT number FROM phone_numbers where number = $1;`
 	updateString := `UPDATE phone_numbers SET number = $2 WHERE id = $1;`
+	deleteString := `DELETE FROM phone_numbers WHERE id = $1;`
+
 	for i, v := range records {
 		newV := normalize(v)
-		//fmt.Println("this should be inserted:", newV)
-		_, err := db.Exec(updateString, i+1, newV)
-		if err != nil {
-			return err
+
+		//checking if number exists in DB
+		row := db.QueryRow(recordCheckString, newV)
+		var number string
+		err := row.Scan(&number)
+
+		//number wasnt in DB then update the row
+		if err == sql.ErrNoRows {
+			_, err := db.Exec(updateString, i+1, newV)
+			if err != nil {
+				return err
+			}
+			//else delete that row becuase its a duplicate
+		} else {
+			_, err := db.Exec(deleteString, i+1)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
