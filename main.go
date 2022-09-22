@@ -50,12 +50,14 @@ func main() {
 	_, err = insertNum(db, "(123)456-7890")
 	errCheck(err)
 
-	results, err := getRecords(db)
+	records, err := getRecords(db)
 	errCheck(err)
-	fmt.Println("Normalizing....")
-	normalizeRecords(db, results)
 
-	results, err = getRecords(db)
+	fmt.Println("Normalizing....")
+	err = normalizeRecords(db, records)
+	errCheck(err)
+
+	records, err = getRecords(db)
 	errCheck(err)
 	//fmt.Println(results)
 }
@@ -113,8 +115,7 @@ func resetTable(db *sql.DB) error {
 }
 
 func normalizeRecords(db *sql.DB, records []string) error {
-	//fmt.Println(len(records))
-	updateString := `UPDATE phone_numbers SET numbers = $1;`
+	updateString := `UPDATE phone_numbers SET number = $1;`
 	for _, v := range records {
 		newV := normalize(v)
 		//fmt.Println("this should be inserted:", newV)
