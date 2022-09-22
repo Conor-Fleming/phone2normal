@@ -50,9 +50,14 @@ func main() {
 	_, err = insertNum(db, "(123)456-7890")
 	errCheck(err)
 
-	checkRecords(db)
+	results, err := getRecords(db)
+	errCheck(err)
 	fmt.Println("Normalizing....")
-	normalizeRecords(db)
+	normalizeRecords(db, results)
+
+	results, err = getRecords(db)
+	errCheck(err)
+	//fmt.Println(results)
 }
 
 func errCheck(err error) {
@@ -77,26 +82,25 @@ func insertNum(db *sql.DB, number string) (int, error) {
 	return id, nil
 }
 
-func checkRecords(db *sql.DB) error {
+func getRecords(db *sql.DB) ([]string, error) {
 	queryString := `SELECT number FROM phone_numbers;`
 	rows, err := db.Query(queryString)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 
-	//numberSlice := make([]string, 0)
-	i := 0
+	numberSlice := make([]string, 0)
 	for rows.Next() {
 		var number string
 		err = rows.Scan(&number)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		fmt.Println(i, number)
-		i++
+		numberSlice = append(numberSlice, number)
+		fmt.Println(number)
 	}
-	return nil
+	return numberSlice, nil
 }
 
 func resetTable(db *sql.DB) error {
@@ -108,33 +112,16 @@ func resetTable(db *sql.DB) error {
 	return nil
 }
 
-func normalizeRecords(db *sql.DB) error {
-	queryString := `SELECT number FROM phone_numbers;`
-
-	rows, err := db.Query(queryString)
-	if err != nil {
-		return err
-	}
-
-	numberSlice := make([]string, 0)
-	for rows.Next() {
-		var number string
-		err = rows.Scan(&number)
+func normalizeRecords(db *sql.DB, records []string) error {
+	//fmt.Println(len(records))
+	updateString := `UPDATE phone_numbers SET numbers = $1;`
+	for _, v := range records {
+		newV := normalize(v)
+		//fmt.Println("this should be inserted:", newV)
+		_, err := db.Exec(updateString, newV)
 		if err != nil {
 			return err
 		}
-		numberSlice = append(numberSlice, number)
 	}
-	defer rows.Close()
-
-	updateString := `UPDATE phone_numbers SET numbers = (newNumber) VALUES ($1);`
-	rows, err = db.Query(updateString)
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
-
-	}
-
 	return nil
 }
