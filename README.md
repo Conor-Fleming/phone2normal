@@ -9,7 +9,6 @@ Once we have the records stored in a slice, we normalize the phone numbers by re
 If the record being updated already exists we simply delete the duplicate row.
 
 ### Follow ups
--needs refactoring/moved to db directory
 -could explore user of an ORM
 
 
